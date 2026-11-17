@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ZipLink - Shorten. Share. Track.</title>
+<meta name="description" content="ZipLink is a self-hosted URL shortener with QR codes, click tracking, expiring links and password protection.">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0b0d12">
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%237c3aed'/%3E%3Cpath d='M9 10h14L9 22h14' fill='none' stroke='%2322d3ee' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/styles.css">
+<script src="/app.js" defer></script>
+</head>
+<body>
+<noscript><p class="noscript">ZipLink needs JavaScript to run. Please enable it and reload.</p></noscript>
+
+<main id="login-view" class="gate" hidden>
+  <div class="brand brand-lg">
+    <svg class="logo-mark" viewBox="0 0 32 32" width="32" height="32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="#7c3aed"/><path d="M9 10h14L9 22h14" fill="none" stroke="#22d3ee" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <span>ZipLink</span>
+  </div>
+  <p class="tagline">Shorten. Share. Track.</p>
+  <section class="card gate-card" aria-labelledby="login-title">
+    <h1 id="login-title">Admin sign in</h1>
+    <form id="login-form" class="stack" novalidate>
+      <div class="field">
+        <label for="login-username">Username</label>
+        <input id="login-username" name="username" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="64" required>
+      </div>
+      <div class="field">
+        <label for="login-password">Password</label>
+        <input id="login-password" name="password" type="password" autocomplete="current-password" maxlength="256" required>
+      </div>
+      <p id="login-error" class="form-error" role="alert" hidden></p>
+      <button id="login-submit" class="btn btn-primary" type="submit">Sign in</button>
+    </form>
+  </section>
+</main>
+
+<div id="app-view" hidden>
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <div class="brand">
+        <svg class="logo-mark" viewBox="0 0 32 32" width="28" height="28" aria-hidden="true"><rect width="32" height="32" rx="8" fill="#7c3aed"/><path d="M9 10h14L9 22h14" fill="none" stroke="#22d3ee" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>ZipLink</span>
+        <span class="tagline-inline">Shorten. Share. Track.</span>
+      </div>
+      <div class="topbar-actions">
+        <span id="user-name" class="muted small"></span>
+        <button id="logout-btn" class="btn btn-secondary btn-sm" type="button">Log out</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container main">
+    <section class="card" aria-labelledby="create-title">
+      <h2 id="create-title">Shorten a link</h2>
+      <form id="create-form" class="stack" novalidate>
+        <div class="field">
+          <label for="url">Long URL</label>
+          <div class="input-row">
+            <input id="url" name="url" type="url" inputmode="url" placeholder="https://example.com/a/very/long/link" autocomplete="off" autocapitalize="none" spellcheck="false" maxlength="2048" required>
+            <button id="create-submit" class="btn btn-primary" type="submit">Shorten</button>
+          </div>
+        </div>
+        <details id="options" class="options">
+          <summary>Options</summary>
+          <div class="options-grid">
+            <div class="field">
+              <label for="alias">Custom alias <span class="hint">optional</span></label>
+              <div class="prefixed">
+                <span id="alias-prefix" class="prefix">/</span>
+                <input id="alias" name="alias" type="text" placeholder="my-link" autocomplete="off" autocapitalize="none" spellcheck="false" minlength="3" maxlength="32">
+              </div>
+            </div>
+            <div class="field">
+              <label for="expires">Expires <span class="hint">optional</span></label>
+              <input id="expires" name="expires" type="datetime-local">
+            </div>
+            <div class="field">
+              <label for="link-password">Password <span class="hint">optional</span></label>
+              <input id="link-password" name="password" type="password" autocomplete="new-password" minlength="4" maxlength="128">
+            </div>
+          </div>
+        </details>
+        <p id="create-error" class="form-error" role="alert" hidden></p>
+      </form>
+
+      <div id="result" class="result" hidden>
+        <img id="result-qr" class="result-qr" width="96" height="96" alt="">
+        <div class="result-body">
+          <p class="label">Your short link</p>
+          <a id="result-link" class="result-link" target="_blank" rel="noopener"></a>
+          <p id="result-meta" class="muted small"></p>
+          <div class="actions">
+            <button id="result-copy" class="btn btn-primary btn-sm" type="button">Copy link</button>
+            <button id="result-qr-btn" class="btn btn-secondary btn-sm" type="button">QR code</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="stats" aria-label="Summary">
+      <div class="card stat">
+        <p class="stat-label">Total links</p>
+        <p id="stat-links" class="stat-value">0</p>
+      </div>
+      <div class="card stat">
+        <p class="stat-label">Total clicks</p>
+        <p id="stat-clicks" class="stat-value accent-cyan">0</p>
+      </div>
+      <div class="card stat">
+        <p class="stat-label">Active links</p>
+        <p id="stat-active" class="stat-value">0</p>
+        <p id="stat-expired" class="stat-note"></p>
+      </div>
+      <div class="card stat">
+        <p class="stat-label">Password-protected</p>
+        <p id="stat-protected" class="stat-value accent-purple">0</p>
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="analytics-title">
+      <div class="section-head">
+        <h2 id="analytics-title">Analytics</h2>
+        <p id="analytics-note" class="muted small"></p>
+      </div>
+      <h3>Clicks, last 14 days</h3>
+      <div id="chart" class="chart" role="img" aria-label="Clicks per day"></div>
+      <p id="chart-empty" class="muted small" hidden>No clicks recorded yet. They appear here as soon as someone opens a short link.</p>
+      <div class="rank-grid">
+        <div>
+          <h3>Top links</h3>
+          <ol id="rank-links" class="rank"></ol>
+        </div>
+        <div>
+          <h3>Referrers</h3>
+          <ol id="rank-referrers" class="rank"></ol>
+        </div>
+        <div>
+          <h3>Devices</h3>
+          <ol id="rank-devices" class="rank"></ol>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="links-title">
+      <div class="section-head">
+        <h2 id="links-title">Recent links</h2>
+        <button id="refresh-btn" class="btn btn-secondary btn-sm" type="button">Refresh</button>
+      </div>
+      <div class="toolbar">
+        <label class="sr-only" for="search">Search links</label>
+        <input id="search" class="toolbar-search" type="search" placeholder="Search by alias or URL" autocomplete="off" spellcheck="false">
+        <select id="filter" aria-label="Filter links">
+          <option value="all">All links</option>
+          <option value="active">Active</option>
+          <option value="expired">Expired</option>
+          <option value="protected">Password-protected</option>
+        </select>
+        <select id="sort" aria-label="Sort links">
+          <option value="newest">Newest first</option>
+          <option value="oldest">Oldest first</option>
+          <option value="clicks">Most clicks</option>
+        </select>
+      </div>
+      <div class="table-wrap">
+        <table class="links-table" role="table">
+          <thead role="rowgroup">
+            <tr role="row">
+              <th role="columnheader" scope="col">Link</th>
+              <th role="columnheader" scope="col">Clicks</th>
+              <th role="columnheader" scope="col">Created</th>
+              <th role="columnheader" scope="col">Expires</th>
+              <th role="columnheader" scope="col"><span class="sr-only">Actions</span></th>
+            </tr>
+          </thead>
+          <tbody id="links-body" role="rowgroup"></tbody>
+        </table>
+      </div>
+      <p id="links-empty" class="empty" hidden></p>
+      <div class="table-foot">
+        <span id="links-count" class="muted small"></span>
+        <button id="more-btn" class="btn btn-secondary btn-sm" type="button" hidden>Show more</button>
+      </div>
+    </section>
+  </main>
+
+  <footer class="container footer">
+    <span>ZipLink by Shubham Gautam Upadhyaya</span>
+    <span>
+      <a href="https://github.com/ShubhamGtm_" target="_blank" rel="noopener">GitHub: ShubhamGtm_</a>
+      &middot; MIT License
+    </span>
+  </footer>
+</div>
+
+<dialog id="qr-dialog" aria-labelledby="qr-title">
+  <div class="dialog-body dialog-center">
+    <h2 id="qr-title">QR code</h2>
+    <img id="qr-image" class="qr-image" width="280" height="280" alt="">
+    <p id="qr-link" class="mono small break"></p>
+    <div class="actions actions-center">
+      <button id="qr-copy" class="btn btn-secondary btn-sm" type="button">Copy link</button>
+      <a id="qr-png" class="btn btn-secondary btn-sm" download>Download PNG</a>
+      <a id="qr-svg" class="btn btn-secondary btn-sm" download>Download SVG</a>
+    </div>
+    <button id="qr-close" class="btn btn-primary" type="button">Close</button>
+  </div>
+</dialog>
+
+<dialog id="confirm-dialog" aria-labelledby="confirm-title">
+  <div class="dialog-body">
+    <h2 id="confirm-title">Delete this link?</h2>
+    <p id="confirm-text" class="muted"></p>
+    <div class="actions actions-end">
+      <button id="confirm-cancel" class="btn btn-secondary" type="button">Cancel</button>
+      <button id="confirm-delete" class="btn btn-danger" type="button">Delete link</button>
+    </div>
+  </div>
+</dialog>
+
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+</body>
+</html>

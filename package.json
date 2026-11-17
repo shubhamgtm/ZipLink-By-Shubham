@@ -1,0 +1,39 @@
+{
+  "name": "ziplink",
+  "version": "1.0.0",
+  "description": "ZipLink is a self-hosted URL shortener with QR codes, click tracking, expiring links and password protection. Shorten. Share. Track.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "setup": "node server.js --setup",
+    "hash": "node server.js --hash",
+    "secret": "node -e \"console.log(require('crypto').randomBytes(32).toString('hex'))\""
+  },
+  "keywords": [
+    "url-shortener",
+    "link-shortener",
+    "qr-code",
+    "express",
+    "nodejs",
+    "self-hosted",
+    "analytics"
+  ],
+  "author": "Shubham Gautam Upadhyaya (https://github.com/ShubhamGtm_)",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ShubhamGtm_/ziplink.git"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "express-rate-limit": "^7.5.0",
+    "helmet": "^8.0.0",
+    "qrcode": "^1.5.4"
+  }
+}

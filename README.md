@@ -4,7 +4,7 @@
 
 ZipLink is a self-hosted URL shortener built with Node.js and Express. It stores everything in plain JSON files, so there is no database to install or manage. Sign in to a clean dark dashboard, create short links, share them with QR codes, and watch real click analytics come in.
 
-Created by **Shubham Gautam Upadhyaya** ([@ShubhamGtm_](https://github.com/ShubhamGtm_)) and released under the MIT License.
+Created by **Shubham Gautam Upadhyaya** ([@ShubhamGtm_](https://github.com/shubhamgtm)) and released under the MIT License.
 
 ## Features
 
